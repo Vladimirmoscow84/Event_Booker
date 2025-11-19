@@ -1,4 +1,4 @@
-module github.com/Vladimirmoscow84/Event_Booker.git
+module github.com/Vladimirmoscow84/Event_Booker
 
 go 1.25.0
 

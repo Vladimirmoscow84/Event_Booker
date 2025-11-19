@@ -3,14 +3,14 @@ package storage
 import (
 	"context"
 
-	"github.com/Vladimirmoscow84/Event_Booker.git/internal/model"
-	"github.com/Vladimirmoscow84/Event_Booker.git/internal/storage/postgres"
+	"github.com/Vladimirmoscow84/Event_Booker/internal/model"
+	"github.com/Vladimirmoscow84/Event_Booker/internal/storage/postgres"
 )
 
 type eventStorage interface {
 	CreateEvent(ctx context.Context, event *model.Event) (int, error)
 	GetEvent(ctx context.Context, id int) (*model.Event, error)
-	ListEvents(ctx context.Context, id int) ([]*model.Event, error)
+	ListEvent(ctx context.Context, id int) ([]*model.Event, error)
 	UpdateEvents(ctx context.Context, event *model.Event) error
 }
 
