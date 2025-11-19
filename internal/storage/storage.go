@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Vladimirmoscow84/Event_Booker.git/internal/model"
+	"github.com/Vladimirmoscow84/Event_Booker.git/internal/storage/postgres"
 )
 
 type eventStorage interface {
@@ -25,4 +26,14 @@ type userStorage interface {
 	CreateUser(ctx context.Context, user *model.User) (int, error)
 	GetUserByID(ctx context.Context, id int) (*model.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
+}
+
+type Storage struct {
+	*postgres.Postgres
+}
+
+func New(postgres *postgres.Postgres) *Storage {
+	return &Storage{
+		Postgres: postgres,
+	}
 }
