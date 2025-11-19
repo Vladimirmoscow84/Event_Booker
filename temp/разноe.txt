@@ -1,0 +1,10 @@
+миграции:
+Миграции на домашнем Маке:
+ *** c УЧЕТОМ ошибок переменной окружения  (PGLOCALEDIR=/Library/PostgreSQL/17/share/locale)***
+
+migrate create -ext sql -dir /Users/mac/Dev/WBTech/event_booker/db/dumps -seq tables
+
+ env -u PGLOCALEDIR migrate -database "postgres://localhost:5440/event_booker?sslmode=disable&user=vladimir&password=password" -path /Users/mac/Dev/WBTech/event_booker/db/dumps up
+
+ env -u PGLOCALEDIR migrate -database "postgres://localhost:5440/event_booker?sslmode=disable&user=vladimir&password=password" -path /Users/mac/Dev/WBTech/event_booker/db/dumps down
+
