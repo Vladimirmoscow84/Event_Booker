@@ -80,13 +80,13 @@ func (p *Postgres) UpdateEvent(ctx context.Context, event *model.Event) error {
 				title=$1, date=$2, total_seats=$3, available_seats=$4,booking_ttl=$5, requires_payment=$6
 			WHERE id=$7
 	`
-	resp, err := p.DB.ExecContext(ctx, query, event.Title, event.Date, event.TotalSeats, event.AvailableSeats, int(event.BookingTTL.Minutes()), event.RequiresPayment, event.ID)
+	res, err := p.DB.ExecContext(ctx, query, event.Title, event.Date, event.TotalSeats, event.AvailableSeats, int(event.BookingTTL.Minutes()), event.RequiresPayment, event.ID)
 
 	if err != nil {
 		log.Printf("[postgres] error updating event: %v", err)
 		return fmt.Errorf("[postgres] error updating event: %w", err)
 	}
-	rows, _ := resp.RowsAffected()
+	rows, _ := res.RowsAffected()
 	if rows == 0 {
 		log.Printf("[postgres] update event: no rows affected for id=%d", event.ID)
 	}
