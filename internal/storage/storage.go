@@ -10,8 +10,8 @@ import (
 type eventStorage interface {
 	CreateEvent(ctx context.Context, event *model.Event) (int, error)
 	GetEvent(ctx context.Context, id int) (*model.Event, error)
-	ListEvent(ctx context.Context, id int) ([]*model.Event, error)
-	UpdateEvents(ctx context.Context, event *model.Event) error
+	ListEvents(ctx context.Context) ([]*model.Event, error)
+	UpdateEvent(ctx context.Context, event *model.Event) error
 }
 
 type bookingStorage interface {
