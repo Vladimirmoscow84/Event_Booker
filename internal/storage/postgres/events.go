@@ -13,7 +13,7 @@ import (
 func (p *Postgres) CreateEvent(ctx context.Context, event *model.Event) (int, error) {
 	query := `
 			INSERT INTO events
-				(title, date, tatal_seats, available_seats, booking_ttl, requires_payment,created_at)
+				(title, date, total_seats, available_seats, booking_ttl, requires_payment,created_at)
 			VALUES
 				($1,$2,$3,$4,$5,$6,NOW())	
 			RETURNING id;
