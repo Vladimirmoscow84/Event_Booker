@@ -103,7 +103,7 @@ func (s *Service) CreateBooking(ctx context.Context, eventID, userID int) (int, 
 		UserID:    userID,
 		Status:    model.BookingStatusPending,
 		CreatedAt: time.Now(),
-		ExpiresAt: time.Now().Add(event.BookingTTL), // время жизни брони
+		ExpiresAt: time.Now().Add(time.Duration(event.BookingTTL) * time.Minute), // время жизни брони
 	}
 
 	id, err := s.storage.CreateBooking(ctx, booking)

@@ -4,14 +4,14 @@ import "time"
 
 // Бронируемое событие
 type Event struct {
-	ID              int           `json:"id" db:"id"`
-	Title           string        `json:"title" db:"title"`
-	Date            time.Time     `json:"date" db:"date"`
-	TotalSeats      int           `json:"total_seats" db:"total_seats"`
-	AvailableSeats  int           `json:"available_seats" db:"available_seats"`
-	BookingTTL      time.Duration `json:"booking_ttl" db:"booking_ttl"`
-	RequiresPayment bool          `json:"requires_payment" db:"requires_payment"`
-	CreatedAt       time.Time     `json:"created_at" db:"created_at"`
+	ID              int       `json:"id" db:"id"`
+	Title           string    `json:"title" db:"title"`
+	Date            time.Time `json:"date" db:"date"`
+	TotalSeats      int       `json:"total_seats" db:"total_seats"`
+	AvailableSeats  int       `json:"available_seats" db:"available_seats"`
+	BookingTTL      int       `json:"booking_ttl" db:"booking_ttl"`
+	RequiresPayment bool      `json:"requires_payment" db:"requires_payment"`
+	CreatedAt       time.Time `json:"created_at" db:"created_at"`
 }
 
 // Статус брони

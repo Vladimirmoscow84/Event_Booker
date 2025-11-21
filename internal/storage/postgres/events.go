@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/Vladimirmoscow84/Event_Booker/internal/model"
 )
@@ -18,7 +17,7 @@ func (p *Postgres) CreateEvent(ctx context.Context, event *model.Event) (int, er
 				($1,$2,$3,$4,$5,$6,NOW())	
 			RETURNING id;
 		`
-	row := p.DB.QueryRowxContext(ctx, query, event.Title, event.Date, event.TotalSeats, event.AvailableSeats, int(event.BookingTTL.Minutes()), event.RequiresPayment)
+	row := p.DB.QueryRowxContext(ctx, query, event.Title, event.Date, event.TotalSeats, event.AvailableSeats, event.BookingTTL, event.RequiresPayment)
 
 	var id int
 	err := row.Scan(&id)
@@ -45,7 +44,7 @@ func (p *Postgres) GetEvent(ctx context.Context, id int) (*model.Event, error) {
 		log.Printf("[postgres] error getting event from events: %v", err)
 		return nil, fmt.Errorf("[postgres] error getting event from events: %w", err)
 	}
-	event.BookingTTL = event.BookingTTL * time.Minute
+
 	return &event, nil
 }
 
@@ -65,9 +64,9 @@ func (p *Postgres) ListEvents(ctx context.Context) ([]*model.Event, error) {
 		return nil, fmt.Errorf("[postgres] error listing events: %w", err)
 	}
 
-	for _, event := range events {
-		event.BookingTTL = event.BookingTTL * time.Minute
-	}
+	// for _, event := range events {
+	// 	event.BookingTTL = event.BookingTTL * time.Minute
+	// }
 
 	return events, nil
 }
@@ -80,7 +79,7 @@ func (p *Postgres) UpdateEvent(ctx context.Context, event *model.Event) error {
 				title=$1, date=$2, total_seats=$3, available_seats=$4,booking_ttl=$5, requires_payment=$6
 			WHERE id=$7
 	`
-	res, err := p.DB.ExecContext(ctx, query, event.Title, event.Date, event.TotalSeats, event.AvailableSeats, int(event.BookingTTL.Minutes()), event.RequiresPayment, event.ID)
+	res, err := p.DB.ExecContext(ctx, query, event.Title, event.Date, event.TotalSeats, event.AvailableSeats, event.BookingTTL, event.RequiresPayment, event.ID)
 
 	if err != nil {
 		log.Printf("[postgres] error updating event: %v", err)
