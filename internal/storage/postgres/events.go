@@ -18,7 +18,7 @@ func (p *Postgres) CreateEvent(ctx context.Context, event *model.Event) (int, er
 				($1,$2,$3,$4,$5,$6,NOW())	
 			RETURNING id;
 		`
-	row := p.DB.QueryRowxContext(ctx, query, event.Title, event.Date, event.TotalSeats, event.AvailableSeats, int(event.BookingTTL.Minutes()), event.RequiresPayment, event.CreatedAt)
+	row := p.DB.QueryRowxContext(ctx, query, event.Title, event.Date, event.TotalSeats, event.AvailableSeats, int(event.BookingTTL.Minutes()), event.RequiresPayment)
 
 	var id int
 	err := row.Scan(&id)
