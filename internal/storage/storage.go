@@ -2,6 +2,8 @@ package storage
 
 import (
 	"context"
+	"errors"
+	"log"
 
 	"github.com/Vladimirmoscow84/Event_Booker/internal/model"
 	"github.com/Vladimirmoscow84/Event_Booker/internal/storage/postgres"
@@ -32,8 +34,12 @@ type Storage struct {
 	*postgres.Postgres
 }
 
-func New(postgres *postgres.Postgres) *Storage {
+func New(postgres *postgres.Postgres) (*Storage, error) {
+	if postgres == nil {
+		log.Println("[storage] postgres client is nil")
+		return nil, errors.New("[storage] postgres client is nil")
+	}
 	return &Storage{
 		Postgres: postgres,
-	}
+	}, nil
 }

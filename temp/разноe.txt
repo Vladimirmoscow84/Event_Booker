@@ -8,3 +8,11 @@ migrate create -ext sql -dir /Users/mac/Dev/WBTech/event_booker/db/dumps -seq ta
 
  env -u PGLOCALEDIR migrate -database "postgres://localhost:5440/event_booker?sslmode=disable&user=vladimir&password=password" -path /Users/mac/Dev/WBTech/event_booker/db/dumps down
 
+
+__________________ЗАПУСК в ДОКЕРЕ___________
+postgres:
+
+docker run -d --name pg-image_processor --network image_processor_net -p 5440:5432 -e POSTGRES_USER=vladimir -e POSTGRES_PASSWORD=password -e POSTGRES_DB=image_processor postgres:latest
+
+Проверка:
+docker logs pg-image_processor

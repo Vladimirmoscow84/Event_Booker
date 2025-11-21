@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../Delayed_Notifier"
+		},
+		{
+			"path": "../../../Image_processor"
+		}
+	],
+	"settings": {}
+}
