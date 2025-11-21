@@ -12,7 +12,7 @@ migrate create -ext sql -dir /Users/mac/Dev/WBTech/event_booker/db/dumps -seq ta
 __________________ЗАПУСК в ДОКЕРЕ___________
 postgres:
 
-docker run -d --name pg-event_booker --network event_booker_net -p 5440:5432 -e POSTGRES_USER=vladimir -e POSTGRES_PASSWORD=password -e POSTGRES_DB=event_booker postgres:latest
+docker run -d --name pg-event_booker -p 5440:5432 -e POSTGRES_USER=vladimir -e POSTGRES_PASSWORD=password -e POSTGRES_DB=event_booker postgres:latest
 
 Проверка:
 docker logs pg-event_booker
