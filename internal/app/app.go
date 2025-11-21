@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"time"
@@ -66,13 +67,31 @@ func Run() {
 	router := handlers.New(engine, serviceClient, serviceClient, serviceClient, serviceClient)
 	router.Routes()
 
-	log.Printf("[app] starting server on %s", serverAddr)
-	err = engine.Run(serverAddr)
-	if err != nil {
-		log.Fatalf("[app] server failed: %v", err)
+	srv := &http.Server{
+		Addr:    serverAddr,
+		Handler: engine,
 	}
 
+	// запуск сервера в отдельной горутине
+	go func() {
+		log.Printf("[app] starting server on %s", serverAddr)
+		err = srv.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatalf("[app] server failed: %v", err)
+		}
+	}()
+
+	//ShutDown
 	<-ctx.Done()
-	log.Println("[app] server is stopped")
+	log.Println("[app] shutting down server...")
+
+	ctxShutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctxShutdown); err != nil {
+		log.Fatalf("[app] server shutdown failed: %v", err)
+	}
+
+	log.Println("[app] server stopped")
 
 }
