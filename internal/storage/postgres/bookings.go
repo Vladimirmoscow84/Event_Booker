@@ -66,7 +66,7 @@ func (p *Postgres) GetExpiredBookings(ctx context.Context) ([]*model.Booking, er
 }
 
 // UpdateStatusBooking менят статус брони (pending, confimed,  canceled)
-func (p *Postgres) UpdateStatusBooking(ctx context.Context, id int, status model.BookingStatus) error {
+func (p *Postgres) UpdateBookingStatus(ctx context.Context, id int, status model.BookingStatus) error {
 
 	query := `
 		UPDATE bookings

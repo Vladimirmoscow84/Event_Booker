@@ -18,7 +18,7 @@ type bookingStorage interface {
 	CreateBooking(ctx context.Context, booking *model.Booking) (int, error)
 	GetBooking(ctx context.Context, id int) (*model.Booking, error)
 	GetExpiredBookings(ctx context.Context) ([]*model.Booking, error)
-	UpdateStatusBooking(ctx context.Context, id int, status model.BookingStatus) error
+	UpdateBookingStatus(ctx context.Context, id int, status model.BookingStatus) error
 	DeleteBooking(ctx context.Context, id int) error
 }
 
