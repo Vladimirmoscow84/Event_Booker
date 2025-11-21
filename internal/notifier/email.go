@@ -75,6 +75,6 @@ func (c *Client) Send(ctx context.Context, subject, body string) error {
 		log.Printf("[email] send error: %v", err)
 		return err
 	}
-	log.Printf("[email] message successully sent to: %s", strings.Join(c.to, ","))
+	log.Printf("[email] message successfully sent to: %s", strings.Join(c.to, ","))
 	return nil
 }
