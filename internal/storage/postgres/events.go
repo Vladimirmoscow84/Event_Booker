@@ -35,7 +35,7 @@ func (p *Postgres) GetEvent(ctx context.Context, id int) (*model.Event, error) {
 
 	query := `
 			SELECT 
-				id, title, date, tatal_seats, available_seats, booking_ttl, requires_payment,created_at
+				id, title, date, total_seats, available_seats, booking_ttl, requires_payment,created_at
 			FROM events
 			WHERE id=$1
 	`

@@ -64,7 +64,7 @@ func Run() {
 
 	engine := ginext.New("release")
 
-	router := handlers.New(engine, serviceClient, serviceClient, serviceClient, serviceClient)
+	router := handlers.New(engine, serviceClient, serviceClient, serviceClient, serviceClient, serviceClient)
 	router.Routes()
 
 	srv := &http.Server{
