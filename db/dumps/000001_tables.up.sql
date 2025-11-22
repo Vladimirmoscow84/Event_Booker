@@ -3,6 +3,8 @@ BEGIN;
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'user',
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
@@ -14,7 +16,8 @@ CREATE TABLE events (
     available_seats INTEGER NOT NULL CHECK (available_seats >= 0),
     booking_ttl INTEGER NOT NULL CHECK (booking_ttl > 0), 
     requires_payment BOOLEAN NOT NULL DEFAULT true,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CHECK (available_seats <= total_seats)
 );
 
 
@@ -24,7 +27,8 @@ CREATE TABLE bookings (
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     status TEXT NOT NULL CHECK (status IN ('pending', 'confirmed', 'canceled')),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    expires_at TIMESTAMP NOT NULL
+    expires_at TIMESTAMP NOT NULL,
+    CHECK (expires_at > created_at)
 );
 
 
