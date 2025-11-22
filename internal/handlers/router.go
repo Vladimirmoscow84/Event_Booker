@@ -55,7 +55,7 @@ func (r *Router) Routes() {
 	r.Router.POST("/events/:id/confirm", r.ConfirmBookingHandler)
 	r.Router.GET("/events/:id", r.GetEventHandler)
 	r.Router.GET("/events", r.GetAllEventsHandler)
-	r.Router.GET("/events", r.GetAllEventsHandler)
+	r.Router.POST("/users", r.CreateUserHandler)
 	r.Router.GET("/", func(c *gin.Context) { c.File("./web/index.html") })
 	r.Router.Static("/static", "./web")
 }
