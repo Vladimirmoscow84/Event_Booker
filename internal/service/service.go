@@ -32,10 +32,15 @@ type userService interface {
 	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
 }
 
+type authService interface {
+	Register(ctx context.Context, email, password string) (int, error)
+	Login(ctx context.Context, email, password string) (string, error) //JWT
+}
 type Service struct {
 	storage  *storage.Storage
 	notifier *notifier.Client
 	ttl      time.Duration
+	auth     *AuthService
 }
 
 // compile-time assertions
@@ -43,12 +48,15 @@ var _ eventService = (*Service)(nil)
 var _ bookingService = (*Service)(nil)
 var _ userService = (*Service)(nil)
 
-func New(storage *storage.Storage, notifier *notifier.Client, ttl time.Duration) *Service {
+func New(storage *storage.Storage, notifier *notifier.Client, ttl time.Duration, jwtSecret string) *Service {
+	auth := NewAuthService(storage, jwtSecret)
 	return &Service{
 		storage:  storage,
 		notifier: notifier,
 		ttl:      ttl,
+		auth:     auth,
 	}
+
 }
 
 // Реализация интерфейса eventService
