@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 
@@ -31,21 +32,34 @@ func (p *Postgres) CreateEvent(ctx context.Context, event *model.Event) (int, er
 
 // GetEvent получает запись из таблицы events по id
 func (p *Postgres) GetEvent(ctx context.Context, id int) (*model.Event, error) {
-	var event model.Event
-
 	query := `
-			SELECT 
-				id, title, date, total_seats, available_seats, booking_ttl, requires_payment,created_at
-			FROM events
-			WHERE id=$1
+		SELECT id, title, date, total_seats, available_seats, booking_ttl, requires_payment, created_at
+		FROM events
+		WHERE id=$1
 	`
-	err := p.DB.GetContext(ctx, &event, query, id)
+	row := p.DB.QueryRowContext(ctx, query, id)
+
+	event := &model.Event{}
+	err := row.Scan(
+		&event.ID,
+		&event.Title,
+		&event.Date,
+		&event.TotalSeats,
+		&event.AvailableSeats,
+		&event.BookingTTL,
+		&event.RequiresPayment,
+		&event.CreatedAt,
+	)
 	if err != nil {
+		if err == sql.ErrNoRows {
+
+			return nil, nil
+		}
 		log.Printf("[postgres] error getting event from events: %v", err)
 		return nil, fmt.Errorf("[postgres] error getting event from events: %w", err)
 	}
 
-	return &event, nil
+	return event, nil
 }
 
 // ListEvents получает все записи из таблицы events

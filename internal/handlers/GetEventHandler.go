@@ -21,6 +21,10 @@ func (r *Router) GetEventHandler(c *ginext.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "event not found"})
 		return
 	}
+	if event == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "event not found"})
+		return
+	}
 
 	c.JSON(http.StatusOK, event)
 }

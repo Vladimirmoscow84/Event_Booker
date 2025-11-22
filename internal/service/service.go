@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/Vladimirmoscow84/Event_Booker/internal/model"
@@ -93,6 +94,9 @@ func (s *Service) CreateBooking(ctx context.Context, eventID, userID int) (int, 
 	if err != nil {
 		return 0, err
 	}
+	if event == nil {
+		return 0, fmt.Errorf("event not found")
+	}
 
 	if event.AvailableSeats <= 0 {
 		return 0, fmt.Errorf("no seats available")
@@ -108,6 +112,9 @@ func (s *Service) CreateBooking(ctx context.Context, eventID, userID int) (int, 
 
 	id, err := s.storage.CreateBooking(ctx, booking)
 	if err != nil {
+		if strings.Contains(err.Error(), "idx_unique_user_event_booking") {
+			return 0, fmt.Errorf("user already has a pending booking for this event")
+		}
 		return 0, err
 	}
 
@@ -133,8 +140,12 @@ func (s *Service) ConfirmBooking(ctx context.Context, bookingID int) error {
 	log.Printf("[service] ConfirmBooking: id=%d", bookingID)
 	b, err := s.storage.GetBooking(ctx, bookingID)
 	if err != nil {
-		return err
+		if err.Error() == "sql: no rows in result set" {
+			return fmt.Errorf("booking not found")
+		}
+		return fmt.Errorf("error fetching booking: %w", err)
 	}
+
 	if b.Status != model.BookingStatusPending {
 		return fmt.Errorf("booking was payed or canceled")
 	}
@@ -160,7 +171,10 @@ func (s *Service) CancelBooking(ctx context.Context, bookingID int) error {
 	log.Printf("[service] CancelBooking: id=%d", bookingID)
 	b, err := s.storage.GetBooking(ctx, bookingID)
 	if err != nil {
-		return err
+		if err.Error() == "sql: no rows in result set" {
+			return fmt.Errorf("booking not found")
+		}
+		return fmt.Errorf("error fetching booking: %w", err)
 	}
 
 	if b.Status == model.BookingStatusCanceled {
@@ -174,9 +188,12 @@ func (s *Service) CancelBooking(ctx context.Context, bookingID int) error {
 
 	// в случае отмены идет возврат места
 	event, err := s.storage.GetEvent(ctx, b.EventID)
-	if err == nil {
-		event.AvailableSeats++
-		_ = s.storage.UpdateEvent(ctx, event)
+	if err != nil {
+		return fmt.Errorf("error fetching event for canceled booking: %w", err)
+	}
+	event.AvailableSeats++
+	if err := s.storage.UpdateEvent(ctx, event); err != nil {
+		log.Printf("[service] warning: failed to update available seats for event %d: %v", event.ID, err)
 	}
 
 	// email уведомление

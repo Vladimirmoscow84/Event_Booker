@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 
@@ -12,7 +13,7 @@ import (
 func (p *Postgres) CreateBooking(ctx context.Context, booking *model.Booking) (int, error) {
 	query := `
 			INSERT INTO bookings
-				(event_id, user_id,status, created_at, expires_at)
+				(event_id, user_id, status, created_at, expires_at)
 			VALUES
 				($1, $2, $3, NOW(), $4)
 			RETURNING id;
@@ -20,7 +21,7 @@ func (p *Postgres) CreateBooking(ctx context.Context, booking *model.Booking) (i
 	row := p.DB.QueryRowContext(ctx, query, booking.EventID, booking.UserID, booking.Status, booking.ExpiresAt)
 
 	var id int
-	err := row.Scan()
+	err := row.Scan(&id)
 	if err != nil {
 		log.Printf("[postgres] error creating booking: %v", err)
 		return 0, fmt.Errorf("[postgres] error creating booking: %w", err)
@@ -31,20 +32,31 @@ func (p *Postgres) CreateBooking(ctx context.Context, booking *model.Booking) (i
 
 // GetBooking получает запись из таблицы bookings по id
 func (p *Postgres) GetBooking(ctx context.Context, id int) (*model.Booking, error) {
-	var booking model.Booking
-
 	query := `
-			SELECT 
-				id, event_id, user_id, status, created_at, expires_at
-			FROM bookings
-			WHERE id=$1
+		SELECT id, event_id, user_id, status, created_at, expires_at
+		FROM bookings
+		WHERE id=$1
 	`
-	err := p.DB.GetContext(ctx, &booking, query, id)
+	row := p.DB.QueryRowContext(ctx, query, id)
+
+	booking := &model.Booking{}
+	err := row.Scan(
+		&booking.ID,
+		&booking.EventID,
+		&booking.UserID,
+		&booking.Status,
+		&booking.CreatedAt,
+		&booking.ExpiresAt,
+	)
 	if err != nil {
-		log.Printf("[postgres] error getting booking: %v", err)
-		return nil, fmt.Errorf("[postgres] error getting booking: %w", err)
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		log.Printf("[postgres] error getting booking from bookings: %v", err)
+		return nil, fmt.Errorf("[postgres] error getting booking from bookings: %w", err)
 	}
-	return &booking, nil
+
+	return booking, nil
 }
 
 // GetExpiredBookings  возвращает просроченные бронирования из таблицы bookings (срок брони вышел)
