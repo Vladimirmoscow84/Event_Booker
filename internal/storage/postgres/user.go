@@ -22,12 +22,12 @@ func (p *Postgres) CreateUser(ctx context.Context, user *model.User) (int, error
 	}
 	query := `
 			INSERT INTO users
-				(email, created_at)
+				(email, password_hash, role, created_at)
 			VALUES
-				($1, NOW())
+				($1,$2,$3, NOW())
 			RETURNING id;
 	`
-	row := p.DB.QueryRowContext(ctx, query, user.Email)
+	row := p.DB.QueryRowContext(ctx, query, user.Email, user.PasswordHash, user.Role)
 
 	var id int
 	err = row.Scan(&id)
@@ -60,20 +60,15 @@ func (p *Postgres) GetUserByID(ctx context.Context, id int) (*model.User, error)
 func (p *Postgres) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	query := `
 	SELECT 
-		id, email, created_at 
+		id, email, password_hash, role, created_at 
 	FROM users 
 	WHERE email=$1
 	`
-	row := p.DB.QueryRowContext(ctx, query, email)
-
-	user := &model.User{}
-	err := row.Scan(&user.ID, &user.Email, &user.CreatedAt)
+	var user model.User
+	err := p.DB.GetContext(ctx, &user, query, email)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
-		log.Printf("[postgres] error getting user by email: %v", err)
-		return nil, fmt.Errorf("[postgres] error getting user by email: %w", err)
+
+		return nil, err
 	}
-	return user, nil
+	return &user, nil
 }
