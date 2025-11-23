@@ -250,3 +250,11 @@ func (s *Service) GetUserByEmail(ctx context.Context, email string) (*model.User
 	log.Printf("[service] GetUserByEmail: %s", email)
 	return s.storage.GetUserByEmail(ctx, email)
 }
+
+func (s *Service) Register(ctx context.Context, email, password string) (int, error) {
+	return s.auth.Register(ctx, email, password)
+}
+
+func (s *Service) Login(ctx context.Context, email, password string) (string, error) {
+	return s.auth.Login(ctx, email, password)
+}

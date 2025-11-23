@@ -33,6 +33,8 @@ func Run() {
 
 	serverAddr := cfg.GetString("SERVER_ADDRESS")
 
+	jwtSecret := cfg.GetString("JWT_SECRET")
+
 	eHost := cfg.GetString("EMAIL_HOST")
 	ePort := cfg.GetString("EMAIL_PORT")
 	eUser := cfg.GetString("EMAIL_USER")
@@ -57,15 +59,15 @@ func Run() {
 
 	bookingTTL := 30 * time.Minute
 
-	serviceClient := service.New(storage, emailClient, bookingTTL)
+	serviceClient := service.New(storage, emailClient, bookingTTL, jwtSecret)
 	log.Println("[app] service initialized successfully")
 
 	serviceClient.StartBookingWorker(ctx, 1*time.Minute)
 
 	engine := ginext.New("release")
 
-	router := handlers.New(engine, serviceClient, serviceClient, serviceClient, serviceClient, serviceClient)
-	router.Routes()
+	router := handlers.New(engine, serviceClient, serviceClient, serviceClient, serviceClient, serviceClient, serviceClient)
+	router.Routes(jwtSecret)
 
 	srv := &http.Server{
 		Addr:    serverAddr,
