@@ -77,5 +77,7 @@ func (r *Router) Routes(jwtSecret string) {
 	r.Router.POST("/events", authMiddleware, adminMiddleware, r.CreateEventHandler)
 
 	r.Router.GET("/", func(c *gin.Context) { c.File("./web/index.html") })
+	r.Router.GET("/user", func(c *gin.Context) { c.File("./web/user.html") })
+	r.Router.GET("/admin", func(c *gin.Context) { c.File("./web/admin.html") })
 	r.Router.Static("/static", "./web")
 }

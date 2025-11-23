@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+<div class="max-w-4xl mx-auto p-4">
+    <h1 class="text-3xl font-bold mb-4">Admin Panel</h1>
+
+    <button onclick="window.location.href='/'" class="mb-4 bg-gray-500 text-white px-4 py-2 rounded">Logout</button>
+
+    <!-- Create Event -->
+    <div class="bg-white p-4 rounded shadow mb-4">
+        <h2 class="text-xl font-semibold mb-2">Create Event</h2>
+        <input type="text" id="event-title" placeholder="Title" class="border p-2 w-full mb-2">
+        <input type="datetime-local" id="event-date" class="border p-2 w-full mb-2">
+        <input type="number" id="event-seats" placeholder="Total Seats" class="border p-2 w-full mb-2">
+        <input type="number" id="event-ttl" placeholder="Booking TTL (minutes)" class="border p-2 w-full mb-2">
+        <label class="block mb-2">
+            <input type="checkbox" id="event-payment" checked> Requires Payment
+        </label>
+        <button id="btn-create-event" class="bg-red-500 text-white px-4 py-2 rounded">Create Event</button>
+        <div id="event-error" class="text-red-500 mt-2"></div>
+    </div>
+
+    <!-- Create User -->
+    <div class="bg-white p-4 rounded shadow mb-4">
+        <h2 class="text-xl font-semibold mb-2">Create User</h2>
+        <input type="email" id="user-email" placeholder="Email" class="border p-2 w-full mb-2">
+        <input type="password" id="user-password" placeholder="Password" class="border p-2 w-full mb-2">
+        <button id="btn-create-user" class="bg-blue-500 text-white px-4 py-2 rounded">Create User</button>
+        <div id="user-error" class="text-red-500 mt-2"></div>
+    </div>
+</div>
+
+<script>
+let token = localStorage.getItem("token") || "";
+let role = localStorage.getItem("role") || "";
+
+// Create Event
+document.getElementById('btn-create-event').onclick = async () => {
+    const title = document.getElementById('event-title').value;
+    const date = document.getElementById('event-date').value;
+    const total_seats = parseInt(document.getElementById('event-seats').value);
+    const booking_ttl = parseInt(document.getElementById('event-ttl').value);
+    const requires_payment = document.getElementById('event-payment').checked;
+
+    const res = await fetch('/events', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({title, date, total_seats, available_seats: total_seats, booking_ttl, requires_payment})
+    });
+
+    const data = await res.json();
+    if(res.ok) alert('Event created! ID: '+data.id);
+    else document.getElementById('event-error').innerText = data.error;
+};
+
+// Create User
+document.getElementById('btn-create-user').onclick = async () => {
+    const email = document.getElementById('user-email').value;
+    const password = document.getElementById('user-password').value;
+
+    const res = await fetch('/users', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({email, password})
+    });
+
+    const data = await res.json();
+    if(res.ok) alert('User created! ID: '+data.id);
+    else document.getElementById('user-error').innerText = data.error;
+};
+</script>
+
+</body>
+</html>

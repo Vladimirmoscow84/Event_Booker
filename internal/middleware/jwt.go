@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -26,7 +27,6 @@ func JWTMiddleware(jwtSecret string) gin.HandlerFunc {
 		}
 
 		tokenStr := parts[1]
-
 		claims := jwt.MapClaims{}
 		token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
 			return []byte(jwtSecret), nil
@@ -37,7 +37,31 @@ func JWTMiddleware(jwtSecret string) gin.HandlerFunc {
 			return
 		}
 
-		c.Set("user_id", claims["user_id"])
+		var uid int
+		if v, ok := claims["user_id"]; ok {
+			switch t := v.(type) {
+			case float64:
+				uid = int(t)
+			case int:
+				uid = t
+			case int64:
+				uid = int(t)
+			case string:
+				if n, err := strconv.Atoi(t); err == nil {
+					uid = n
+				}
+			default:
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user_id in token"})
+				c.Abort()
+				return
+			}
+		} else {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user_id not found in token"})
+			c.Abort()
+			return
+		}
+
+		c.Set("user_id", uid)
 		c.Set("role", claims["role"])
 		c.Next()
 	}

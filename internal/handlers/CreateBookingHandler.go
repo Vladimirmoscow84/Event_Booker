@@ -5,30 +5,35 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/wb-go/wbf/ginext"
 )
 
-func (r *Router) CreateBookingHandler(c *ginext.Context) {
+func (r *Router) CreateBookingHandler(c *gin.Context) {
+	// 1. Получаем event id из path
 	idStr := c.Param("id")
 	eventID, err := strconv.Atoi(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid event id"})
 		return
 	}
 
-	var request struct {
-		UserID int `json:"user_id" binding:"required"`
+	// 2. Получаем user_id из контекста, который положил JWT middleware
+	uidVal, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+		return
 	}
-	err = c.ShouldBindJSON(&request)
+	userID, ok := uidVal.(int)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id type"})
+		return
+	}
+
+	// 3. Делегируем в сервис (или storage), который создаёт бронь
+	bookingID, err := r.bookingCreator.CreateBooking(c.Request.Context(), eventID, userID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	bookingID, err := r.bookingCreator.CreateBooking(c.Request.Context(), eventID, request.UserID)
-	if err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
-		return
-	}
 	c.JSON(http.StatusCreated, gin.H{"booking_id": bookingID})
 }

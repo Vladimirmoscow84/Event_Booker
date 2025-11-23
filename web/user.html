@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Panel</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+<div class="max-w-4xl mx-auto p-4">
+    <h1 class="text-3xl font-bold mb-4">User Panel</h1>
+
+    <button onclick="window.location.href='/'" class="mb-4 bg-gray-500 text-white px-4 py-2 rounded">Logout</button>
+
+    <!-- Events List -->
+    <div>
+        <h2 class="text-2xl font-semibold mb-2">Available Events</h2>
+        <ul id="events-list" class="space-y-2"></ul>
+    </div>
+</div>
+
+<script>
+let token = localStorage.getItem("token") || "";
+let userId = 0;
+
+// Получаем user_id из токена
+if(token){
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    userId = payload.user_id;
+}
+
+// Загрузка событий
+async function loadEvents(){
+    const res = await fetch('/events');
+    const events = await res.json();
+    const list = document.getElementById('events-list');
+    list.innerHTML = '';
+    events.forEach(e => {
+        const li = document.createElement('li');
+        li.className = 'bg-white p-2 rounded shadow flex justify-between items-center';
+        li.innerHTML = `
+            <span>${e.title} | ${new Date(e.date).toLocaleString()} | Seats: ${e.available_seats}</span>
+            <button class="bg-blue-500 text-white px-2 py-1 rounded">Book</button>
+        `;
+        li.querySelector('button').onclick = () => bookEvent(e.id);
+        list.appendChild(li);
+    });
+}
+
+// Бронирование события
+async function bookEvent(eventId){
+    const res = await fetch(`/events/${eventId}/book`, {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({user_id: userId})
+    });
+    const data = await res.json();
+    if(res.ok) alert('Booking created! ID: '+data.booking_id);
+    else alert('Error: '+data.error);
+}
+
+// Авто-загрузка событий
+loadEvents();
+</script>
+
+</body>
+</html>

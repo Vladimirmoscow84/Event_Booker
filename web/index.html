@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventBooker</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+<div class="max-w-4xl mx-auto p-4">
+    <h1 class="text-3xl font-bold mb-4">EventBooker</h1>
+
+    <!-- Навигация -->
+    <div class="mb-4 flex space-x-4">
+        <button id="tab-login" class="px-4 py-2 bg-blue-500 text-white rounded">Login</button>
+        <button id="tab-register" class="px-4 py-2 bg-green-500 text-white rounded">Register</button>
+        <button id="tab-events" class="px-4 py-2 bg-gray-500 text-white rounded hidden">Events</button>
+        <button id="tab-admin" class="px-4 py-2 bg-red-500 text-white rounded hidden">Admin</button>
+    </div>
+
+    <!-- Login -->
+    <div id="login-form" class="bg-white p-4 rounded shadow mb-4">
+        <h2 class="text-xl font-semibold mb-2">Login</h2>
+        <input type="email" id="login-email" placeholder="Email" class="border p-2 w-full mb-2">
+        <input type="password" id="login-password" placeholder="Password" class="border p-2 w-full mb-2">
+        <button id="btn-login" class="bg-blue-500 text-white px-4 py-2 rounded">Login</button>
+        <div id="login-error" class="text-red-500 mt-2"></div>
+    </div>
+
+    <!-- Register -->
+    <div id="register-form" class="bg-white p-4 rounded shadow mb-4 hidden">
+        <h2 class="text-xl font-semibold mb-2">Register</h2>
+        <input type="email" id="register-email" placeholder="Email" class="border p-2 w-full mb-2">
+        <input type="password" id="register-password" placeholder="Password" class="border p-2 w-full mb-2">
+        <button id="btn-register" class="bg-green-500 text-white px-4 py-2 rounded">Register</button>
+        <div id="register-error" class="text-red-500 mt-2"></div>
+    </div>
+
+    <!-- Events -->
+    <div id="events" class="hidden">
+        <h2 class="text-2xl font-semibold mb-2">Events</h2>
+        <ul id="events-list" class="space-y-2"></ul>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="admin-panel" class="hidden mt-4">
+        <h2 class="text-2xl font-semibold mb-2">Admin Panel</h2>
+
+        <!-- Create Event -->
+        <div class="bg-white p-4 rounded shadow mb-4">
+            <h3 class="font-semibold mb-2">Create Event</h3>
+            <input type="text" id="event-title" placeholder="Title" class="border p-2 w-full mb-2">
+            <input type="datetime-local" id="event-date" class="border p-2 w-full mb-2">
+            <input type="number" id="event-seats" placeholder="Total Seats" class="border p-2 w-full mb-2">
+            <input type="number" id="event-ttl" placeholder="Booking TTL (minutes)" class="border p-2 w-full mb-2">
+            <label class="block mb-2">
+                <input type="checkbox" id="event-payment" checked> Requires Payment
+            </label>
+            <button id="btn-create-event" class="bg-red-500 text-white px-4 py-2 rounded">Create Event</button>
+            <div id="event-error" class="text-red-500 mt-2"></div>
+        </div>
+
+        <!-- Create User -->
+        <div class="bg-white p-4 rounded shadow mb-4">
+            <h3 class="font-semibold mb-2">Create User/Admin</h3>
+            <input type="email" id="user-email" placeholder="Email" class="border p-2 w-full mb-2">
+            <input type="password" id="user-password" placeholder="Password" class="border p-2 w-full mb-2">
+            <select id="user-role" class="border p-2 w-full mb-2">
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+            </select>
+            <button id="btn-create-user" class="bg-purple-500 text-white px-4 py-2 rounded">Create User/Admin</button>
+            <div id="user-error" class="text-red-500 mt-2"></div>
+        </div>
+
+        <!-- All Bookings -->
+        <div class="bg-white p-4 rounded shadow">
+            <h3 class="font-semibold mb-2">Bookings</h3>
+            <ul id="admin-bookings" class="space-y-2"></ul>
+        </div>
+    </div>
+</div>
+
+<script>
+let token = "";
+let role = "";
+
+// Tabs
+document.getElementById('tab-login').onclick = () => showTab('login');
+document.getElementById('tab-register').onclick = () => showTab('register');
+document.getElementById('tab-events').onclick = () => showTab('events');
+document.getElementById('tab-admin').onclick = () => showTab('admin');
+
+function showTab(tab) {
+    document.getElementById('login-form').classList.add('hidden');
+    document.getElementById('register-form').classList.add('hidden');
+    document.getElementById('events').classList.add('hidden');
+    document.getElementById('admin-panel').classList.add('hidden');
+
+    if(tab==='login') document.getElementById('login-form').classList.remove('hidden');
+    if(tab==='register') document.getElementById('register-form').classList.remove('hidden');
+    if(tab==='events') document.getElementById('events').classList.remove('hidden');
+    if(tab==='admin') document.getElementById('admin-panel').classList.remove('hidden');
+}
+
+// Register
+document.getElementById('btn-register').onclick = async () => {
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+    const res = await fetch('/auth/register', {
+        method:'POST', 
+        headers:{'Content-Type':'application/json'}, 
+        body:JSON.stringify({email,password})
+    });
+    const data = await res.json();
+    if(res.ok){ alert("Registered! ID: "+data.id); showTab('login'); } 
+    else document.getElementById('register-error').innerText = data.error;
+};
+
+// Login
+document.getElementById('btn-login').onclick = async () => {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const res = await fetch('/auth/login', {
+        method:'POST', 
+        headers:{'Content-Type':'application/json'}, 
+        body:JSON.stringify({email,password})
+    });
+    const data = await res.json();
+    if(res.ok){
+        token = data.token;
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        role = payload.role;
+        document.getElementById('tab-events').classList.remove('hidden');
+        if(role==='admin') document.getElementById('tab-admin').classList.remove('hidden');
+        showTab('events');
+        loadEvents();
+        if(role==='admin') loadBookings();
+    } else document.getElementById('login-error').innerText = data.error;
+};
+
+// Load Events
+async function loadEvents(){
+    const res = await fetch('/events');
+    const events = await res.json();
+    const list = document.getElementById('events-list');
+    list.innerHTML = '';
+    events.forEach(e=>{
+        const li = document.createElement('li');
+        li.className='bg-white p-2 rounded shadow flex justify-between items-center';
+        li.innerHTML = `<span>${e.title} | ${new Date(e.date).toLocaleString()} | Seats: ${e.available_seats}</span>
+        <button class="bg-blue-500 text-white px-2 py-1 rounded">Book</button>`;
+        li.querySelector('button').onclick = ()=>bookEvent(e.id);
+        list.appendChild(li);
+    });
+}
+
+// Book Event
+async function bookEvent(eventId){
+    const res = await fetch(`/events/${eventId}/book`, {
+        method:'POST', 
+        headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, 
+        body:JSON.stringify({user_id:0})
+    });
+    const data = await res.json();
+    if(res.ok) alert('Booking created! ID: '+data.booking_id);
+    else alert('Error: '+data.error);
+}
+
+// Admin: Create Event
+document.getElementById('btn-create-event').onclick = async ()=>{
+    const title = document.getElementById('event-title').value;
+    const date = document.getElementById('event-date').value;
+    const total_seats = parseInt(document.getElementById('event-seats').value);
+    const booking_ttl = parseInt(document.getElementById('event-ttl').value);
+    const requires_payment = document.getElementById('event-payment').checked;
+    const res = await fetch('/events', {
+        method:'POST', 
+        headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, 
+        body:JSON.stringify({title,date,total_seats,available_seats:total_seats,booking_ttl,requires_payment})
+    });
+    const data = await res.json();
+    if(res.ok){ alert('Event created! ID: '+data.id); loadEvents(); } 
+    else document.getElementById('event-error').innerText = data.error;
+};
+
+// Admin: Create User/Admin
+document.getElementById('btn-create-user').onclick = async ()=>{
+    const email = document.getElementById('user-email').value;
+    const password = document.getElementById('user-password').value;
+    const role = document.getElementById('user-role').value;
+    const res = await fetch('/users', {
+        method:'POST',
+        headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+        body:JSON.stringify({email,password,role})
+    });
+    const data = await res.json();
+    if(res.ok){ alert('User created! ID: '+data.id); } 
+    else document.getElementById('user-error').innerText = data.error;
+};
+
+// Admin: Load all bookings
+async function loadBookings(){
+    const res = await fetch('/bookings', {headers:{'Authorization':'Bearer '+token}});
+    if(!res.ok) return;
+    const bookings = await res.json();
+    const list = document.getElementById('admin-bookings');
+    list.innerHTML='';
+    bookings.forEach(b=>{
+        const li=document.createElement('li');
+        li.className='bg-gray-100 p-2 rounded shadow';
+        li.innerText=`Booking ${b.id}: Event ${b.event_id}, User ${b.user_id}, Status ${b.status}`;
+        list.appendChild(li);
+    });
+}
+</script>
+
+</body>
+</html>
