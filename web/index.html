@@ -63,14 +63,14 @@
 
         <!-- Create User -->
         <div class="bg-white p-4 rounded shadow mb-4">
-            <h3 class="font-semibold mb-2">Create User/Admin</h3>
-            <input type="email" id="user-email" placeholder="Email" class="border p-2 w-full mb-2">
-            <input type="password" id="user-password" placeholder="Password" class="border p-2 w-full mb-2">
-            <select id="user-role" class="border p-2 w-full mb-2">
+            <h3 class="font-semibold mb-2">Create User</h3>
+            <input type="email" id="new-user-email" placeholder="Email" class="border p-2 w-full mb-2">
+            <input type="password" id="new-user-password" placeholder="Password" class="border p-2 w-full mb-2">
+            <select id="new-user-role" class="border p-2 w-full mb-2">
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
             </select>
-            <button id="btn-create-user" class="bg-purple-500 text-white px-4 py-2 rounded">Create User/Admin</button>
+            <button id="btn-create-user" class="bg-green-500 text-white px-4 py-2 rounded">Create User</button>
             <div id="user-error" class="text-red-500 mt-2"></div>
         </div>
 
@@ -87,10 +87,10 @@ let token = "";
 let role = "";
 
 // Tabs
-document.getElementById('tab-login').onclick = () => showTab('login');
-document.getElementById('tab-register').onclick = () => showTab('register');
-document.getElementById('tab-events').onclick = () => showTab('events');
-document.getElementById('tab-admin').onclick = () => showTab('admin');
+document.getElementById('tab-login').onclick = () => {showTab('login');};
+document.getElementById('tab-register').onclick = () => {showTab('register');};
+document.getElementById('tab-events').onclick = () => {showTab('events');};
+document.getElementById('tab-admin').onclick = () => {showTab('admin');};
 
 function showTab(tab) {
     document.getElementById('login-form').classList.add('hidden');
@@ -108,11 +108,7 @@ function showTab(tab) {
 document.getElementById('btn-register').onclick = async () => {
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
-    const res = await fetch('/auth/register', {
-        method:'POST', 
-        headers:{'Content-Type':'application/json'}, 
-        body:JSON.stringify({email,password})
-    });
+    const res = await fetch('/auth/register', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password})});
     const data = await res.json();
     if(res.ok){ alert("Registered! ID: "+data.id); showTab('login'); } 
     else document.getElementById('register-error').innerText = data.error;
@@ -122,11 +118,7 @@ document.getElementById('btn-register').onclick = async () => {
 document.getElementById('btn-login').onclick = async () => {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    const res = await fetch('/auth/login', {
-        method:'POST', 
-        headers:{'Content-Type':'application/json'}, 
-        body:JSON.stringify({email,password})
-    });
+    const res = await fetch('/auth/login', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password})});
     const data = await res.json();
     if(res.ok){
         token = data.token;
@@ -158,11 +150,7 @@ async function loadEvents(){
 
 // Book Event
 async function bookEvent(eventId){
-    const res = await fetch(`/events/${eventId}/book`, {
-        method:'POST', 
-        headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, 
-        body:JSON.stringify({user_id:0})
-    });
+    const res = await fetch(`/events/${eventId}/book`, {method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({user_id:0})});
     const data = await res.json();
     if(res.ok) alert('Booking created! ID: '+data.booking_id);
     else alert('Error: '+data.error);
@@ -175,29 +163,35 @@ document.getElementById('btn-create-event').onclick = async ()=>{
     const total_seats = parseInt(document.getElementById('event-seats').value);
     const booking_ttl = parseInt(document.getElementById('event-ttl').value);
     const requires_payment = document.getElementById('event-payment').checked;
-    const res = await fetch('/events', {
-        method:'POST', 
-        headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, 
-        body:JSON.stringify({title,date,total_seats,available_seats:total_seats,booking_ttl,requires_payment})
-    });
+    const res = await fetch('/events', {method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({title,date,total_seats,available_seats:total_seats,booking_ttl,requires_payment})});
     const data = await res.json();
     if(res.ok){ alert('Event created! ID: '+data.id); loadEvents(); } 
     else document.getElementById('event-error').innerText = data.error;
-};
+}
 
-// Admin: Create User/Admin
-document.getElementById('btn-create-user').onclick = async ()=>{
-    const email = document.getElementById('user-email').value;
-    const password = document.getElementById('user-password').value;
-    const role = document.getElementById('user-role').value;
+// Admin: Create User
+document.getElementById('btn-create-user').onclick = async () => {
+    const email = document.getElementById('new-user-email').value;
+    const password = document.getElementById('new-user-password').value;
+    const role = document.getElementById('new-user-role').value;
+
     const res = await fetch('/users', {
-        method:'POST',
-        headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
-        body:JSON.stringify({email,password,role})
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({email, password, role})
     });
+
     const data = await res.json();
-    if(res.ok){ alert('User created! ID: '+data.id); } 
-    else document.getElementById('user-error').innerText = data.error;
+    if(res.ok){
+        alert('User created! ID: ' + data.id);
+        document.getElementById('new-user-email').value = '';
+        document.getElementById('new-user-password').value = '';
+    } else {
+        document.getElementById('user-error').innerText = data.error;
+    }
 };
 
 // Admin: Load all bookings
